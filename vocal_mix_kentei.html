@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ボーカルMIX師検定</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #e8ff00;
+    --accent2: #00ffe0;
+    --text: #e8e8f0;
+    --text-dim: #6a6a8a;
+    --danger: #ff4466;
+    --success: #00ff88;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── GRID LINES ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 48px 40px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-block h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 6vw, 72px);
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(232,255,0,0.3);
+  }
+
+  .logo-block p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header-deco {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* ── TOP PAGE ── */
+  #page-top {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 40px;
+  }
+
+  .hero-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent2);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    margin-bottom: 32px;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.9;
+    max-width: 560px;
+    margin-bottom: 56px;
+    font-weight: 300;
+  }
+
+  .grade-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 56px;
+  }
+
+  .grade-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .grade-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+  }
+
+  .grade-card:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-2px);
+  }
+
+  .grade-card:hover::before { transform: scaleX(1); }
+
+  .grade-card .grade-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .grade-card .grade-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+
+  .grade-card .grade-diff {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    padding: 16px 40px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-start:hover {
+    background: #fff;
+    transform: translateX(4px);
+  }
+
+  .btn-start::after {
+    content: '→';
+    font-size: 18px;
+  }
+
+  /* ── QUIZ PAGE ── */
+  #page-quiz {
+    display: none;
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .quiz-grade-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .quiz-progress-wrap {
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .quiz-progress-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .quiz-progress-bar {
+    height: 3px;
+    background: var(--border);
+    position: relative;
+  }
+
+  .quiz-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 10px rgba(232,255,0,0.5);
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .question-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.2em;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 17px;
+    line-height: 1.8;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .options-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    width: 100%;
+    line-height: 1.7;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .option-btn .opt-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--accent);
+    min-width: 24px;
+    line-height: 1.2;
+    flex-shrink: 0;
+  }
+
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: rgba(232,255,0,0.06);
+  }
+
+  .option-btn.correct {
+    border-color: var(--success);
+    background: rgba(0,255,136,0.08);
+  }
+
+  .option-btn.correct .opt-label { color: var(--success); }
+
+  .option-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(255,68,102,0.08);
+  }
+
+  .option-btn.wrong .opt-label { color: var(--danger); }
+
+  .option-btn:disabled { cursor: default; }
+
+  .btn-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    padding: 14px 32px;
+    border: 1px solid var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    display: none;
+  }
+
+  .btn-next:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-next::after { content: '→'; }
+
+  /* ── RESULT PAGE ── */
+  #page-result {
+    display: none;
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 80px 40px;
+  }
+
+  .result-grade-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .result-score-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 14vw, 140px);
+    line-height: 0.9;
+    color: var(--accent);
+    text-shadow: 0 0 60px rgba(232,255,0,0.4);
+    margin-bottom: 8px;
+  }
+
+  .result-score-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    margin-bottom: 40px;
+  }
+
+  .result-verdict {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .result-verdict.pass { color: var(--success); }
+  .result-verdict.fail { color: var(--danger); }
+
+  .result-comment {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.9;
+    margin-bottom: 56px;
+    font-weight: 300;
+    max-width: 560px;
+  }
+
+  /* ── REVIEW ── */
+  .review-section {
+    margin-bottom: 56px;
+  }
+
+  .review-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .review-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .review-item-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .review-item-header:hover { background: var(--surface2); }
+
+  .review-status {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .review-status.ok { color: var(--success); }
+  .review-status.ng { color: var(--danger); }
+
+  .review-q-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    min-width: 48px;
+  }
+
+  .review-q-text {
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.6;
+  }
+
+  .review-toggle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .review-detail {
+    padding: 0 20px 20px 80px;
+    display: none;
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .review-detail.open { display: block; }
+
+  .review-answer-row {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+
+  .review-answer-row .label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    min-width: 72px;
+    color: var(--text-dim);
+  }
+
+  .review-answer-row .val { color: var(--text); }
+  .review-answer-row .val.correct-val { color: var(--success); }
+  .review-answer-row .val.wrong-val { color: var(--danger); }
+
+  .review-explanation {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.9;
+    font-weight: 300;
+  }
+
+  /* ── BUTTONS ── */
+  .result-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-retry, .btn-home {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    padding: 14px 32px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-retry {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-retry:hover { background: #fff; }
+
+  .btn-home {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .btn-home:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* ── PROGRESS DOTS ── */
+  .progress-dots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .progress-dot {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    transition: all 0.3s;
+  }
+
+  .progress-dot.answered { background: var(--accent); border-color: var(--accent); }
+  .progress-dot.current { border-color: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+  @media (max-width: 600px) {
+    header, #page-top, #page-quiz, #page-result { padding-left: 20px; padding-right: 20px; }
+    .grade-grid { grid-template-columns: repeat(3, 1fr); }
+    .question-card { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<header>
+  <div class="logo-block">
+    <h1>VOCAL MIX師検定</h1>
+    <p>Official Certification Examination System</p>
+  </div>
+  <div class="header-deco">
+    <div>SYSTEM VER. 1.0</div>
+    <div>5-GRADE SYSTEM</div>
+    <div>50 QUESTIONS TOTAL</div>
+  </div>
+</header>
+
+<!-- ── TOP PAGE ── -->
+<div id="page-top">
+  <div class="hero-label">Certification Exam</div>
+  <div class="hero-title">
+    あなたの<span>MIXスキル</span>を試せ。
+  </div>
+  <p class="hero-desc">
+    5級から1級まで、ボーカルMIXに必要な知識を体系的に問う検定試験。
+    基礎用語から、プロのエンジニアでも迷う高度な原理まで。
+    さあ、どの級から挑戦しますか？
+  </p>
+
+  <div class="grade-grid" id="grade-grid">
+    <div class="grade-card" data-grade="5">
+      <div class="grade-num">5級</div>
+      <div class="grade-label">GRADE 5</div>
+      <div class="grade-diff">入門</div>
+    </div>
+    <div class="grade-card" data-grade="4">
+      <div class="grade-num">4級</div>
+      <div class="grade-label">GRADE 4</div>
+      <div class="grade-diff">基礎</div>
+    </div>
+    <div class="grade-card" data-grade="3">
+      <div class="grade-num">3級</div>
+      <div class="grade-label">GRADE 3</div>
+      <div class="grade-diff">中級</div>
+    </div>
+    <div class="grade-card" data-grade="2">
+      <div class="grade-num">2級</div>
+      <div class="grade-label">GRADE 2</div>
+      <div class="grade-diff">上級</div>
+    </div>
+    <div class="grade-card" data-grade="1">
+      <div class="grade-num">1級</div>
+      <div class="grade-label">GRADE 1</div>
+      <div class="grade-diff">プロ級</div>
+    </div>
+  </div>
+
+  <button class="btn-start" id="btn-start">検定をスタート</button>
+</div>
+
+<!-- ── QUIZ PAGE ── -->
+<div id="page-quiz">
+  <div class="quiz-header">
+    <div class="quiz-grade-badge" id="quiz-grade-badge">5級</div>
+    <div class="quiz-progress-wrap">
+      <div class="quiz-progress-label">
+        <span id="progress-text">Q1 / 10</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-dots" id="progress-dots"></div>
+
+  <div class="question-card">
+    <div class="question-num" id="question-num">Q01</div>
+    <div class="question-text" id="question-text"></div>
+  </div>
+
+  <ul class="options-list" id="options-list"></ul>
+  <button class="btn-next" id="btn-next">次の問題</button>
+</div>
+
+<!-- ── RESULT PAGE ── -->
+<div id="page-result">
+  <div class="result-grade-title" id="result-grade-title">5級 結果発表</div>
+  <div class="result-score-display" id="result-score">0</div>
+  <div class="result-score-sub" id="result-score-sub">/ 10問中</div>
+  <div class="result-verdict" id="result-verdict"></div>
+  <div class="result-comment" id="result-comment"></div>
+
+  <div class="review-section">
+    <div class="review-title">解答レビュー</div>
+    <div id="review-list"></div>
+  </div>
+
+  <div class="result-actions">
+    <button class="btn-retry" id="btn-retry">もう一度挑戦</button>
+    <button class="btn-home" id="btn-home">級選択に戻る</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = {
+  5: [
+    {
+      q: "「コンプレッサー」の主な役割はどれですか？",
+      opts: ["音量の大きい部分と小さい部分の差を縮める","音に空間的な残響を加える","しきい値以下の音量を自動的にカットする","音をステレオに広げて左右の広がりを出す"],
+      ans: 0,
+      exp: "コンプレッサーはダイナミクス（音量差）を圧縮するエフェクトです。残響を加えるのはリバーブ、しきい値以下をカットするのはゲート/エクスパンダー、ステレオに広げるのはステレオイメージャーの役割です。"
+    },
+    {
+      q: "DAWとは何の略ですか？",
+      opts: ["Dynamic Audio Workstation","Direct Audio Workstation","Digital Audio Workflow","Digital Audio Workstation"],
+      ans: 3,
+      exp: "DAWはDigital Audio Workstationの略です。Cubase、Logic Pro、Studio One、Pro Toolsなどが代表例で、音楽制作・録音・編集の中心となるソフトウェアです。"
+    },
+    {
+      q: "EQで80Hz以下をカットする操作を何と呼びますか？",
+      opts: ["ノッチフィルター","ハイカットフィルター","ローカット（ハイパスフィルター）","ローシェルフカット"],
+      ans: 2,
+      exp: "ハイパスフィルター（ローカット）は低い音を遮断して高い音を通す処理です。「ハイパス＝高い周波数を通す」という意味で、ハイカットはその逆（低域を通して高域をカット）です。"
+    },
+    {
+      q: "ボーカルMIXにおいて「ピッチ補正」とは何をすることですか？",
+      opts: ["音量のバラつきを均一に整える","録音時に混入したノイズを除去する","音に自然な残響を加える","音の高さのズレを修正する"],
+      ans: 3,
+      exp: "ピッチ補正はMelodyneやAuto-Tuneなどのプラグインで音程のズレを修正する作業です。音量を整えるのはコンプ、ノイズ除去はノイズリダクション、残響を加えるのはリバーブです。"
+    },
+    {
+      q: "「ドライ音」とはどういう意味ですか？",
+      opts: ["エフェクトが何もかかっていない素の音","リバーブやディレイが深くかかった音"],
+      ans: 0,
+      exp: "ドライ音はエフェクトがかかっていない原音のことです。対義語のウェット音はリバーブやディレイなどのエフェクトがかかった音を指します。"
+    },
+    {
+      q: "リバーブをかけすぎたボーカルはどうなりますか？",
+      opts: ["高音域が強調されて明るく艶のある音になる","音程のブレが目立たなくなり安定して聴こえる","音がクリアに前に出てオケに埋もれなくなる","音が遠くぼんやりして奥に引っ込む"],
+      ans: 3,
+      exp: "リバーブが過剰だと残響にボーカルが埋もれ、音が奥に引っ込んで存在感がなくなります。プリディレイの設定やウェット量のコントロールが重要です。"
+    },
+    {
+      q: "MIXにおいて「音量バランスを整える」作業を一般的に何と呼びますか？",
+      opts: ["トラックダウン","マスタリング","プリミックス","ミキシング"],
+      ans: 3,
+      exp: "ミキシングは各トラックの音量・定位・音色などを整えてバランスをとる作業です。マスタリングは完成したステレオ音源を配信・リリース向けに最終調整する別工程です。"
+    },
+    {
+      q: "ステレオトラックにおいて「Pan（パン）」とは何を調整するものですか？",
+      opts: ["音のレベル（音量）","音の左右の定位"],
+      ans: 1,
+      exp: "Pan（パンポット）は音の左右の配置（定位）を調整します。音量はフェーダーで調整します。左右に振ることでミックスの空間的な広がりを作ります。"
+    },
+    {
+      q: "ボーカルトラックに最初にかけることが多い処理として、最も一般的なものはどれですか？",
+      opts: ["ディエッサー","コンプレッサー","EQ（イコライザー）","リバーブ"],
+      ans: 2,
+      exp: "一般的にEQを先にかけて不要な帯域（ローエンドノイズや問題のある周波数）を整えてからコンプに送るのが基本フローです。リバーブは最後のほうにかけます。"
+    },
+    {
+      q: "ボーカルMIXで「ダブリング」とはどのようなテクニックですか？",
+      opts: ["ボーカルを左右に100%振り切ってステレオ感を出すテクニック","ボーカルを1オクターブ上のピッチと重ねて広がりを出すテクニック","ボーカルのピッチを半音ずつ上下にズラして重ねるテクニック","同じボーカルを少しズラして重ね、厚みを出すテクニック"],
+      ans: 3,
+      exp: "ダブリングは同じボーカルをタイミングやピッチをわずかにズラして重ねることで厚みと広がりを出すテクニックです。ハース効果を利用したショートディレイでも似た効果が得られます。"
+    }
+  ],
+  4: [
+    {
+      q: "EQで特定の帯域を山なりに持ち上げたり削ったりする操作を何と呼びますか？",
+      opts: ["ピーキング（ベル型）EQ","ハイパスフィルター","ローシェルフEQ","ハイシェルフEQ"],
+      ans: 0,
+      exp: "ピーキング（ベル型）EQは特定の中心周波数を山型に上げ下げします。ハイパスは低域カット、ローシェルフは低域全体の上げ下げ、ハイシェルフは高域全体の上げ下げです。"
+    },
+    {
+      q: "ボーカルトラックのノーマライズとは何をする処理ですか？",
+      opts: ["無音部分をゲートで検出して自動的にカットする","音量の波形をコンプで圧縮して均一に整える","ピッチを検出して基準音に自動で近づける","トラックの最大音量が0dBFSになるよう全体の音量を自動調整する"],
+      ans: 3,
+      exp: "ノーマライズはトラックの最大ピークが0dBFSになるよう全体の音量を自動で調整します。コンプのような動的な処理ではなく、静的な音量調整です。"
+    },
+    {
+      q: "リバーブの「プリディレイ」を設定する目的として正しいものはどれですか？",
+      opts: ["リバーブの残響が消えるまでの時間（ディケイ）を長くする","リバーブのかかる量（ウェット成分）を段階的に増やす","ドライ音とリバーブ成分の間に隙間を作り、ボーカルを前に立たせる","リバーブの高音域成分だけを遅らせてかける"],
+      ans: 2,
+      exp: "プリディレイはリバーブがかかるまでの遅延時間です。ドライ音をしっかり聴かせてから残響を加えることで、リバーブが深くてもボーカルの明瞭感と存在感を保てます。"
+    },
+    {
+      q: "「ゲイン」と「フェーダー」の違いとして正しいものはどれですか？",
+      opts: ["ゲインとフェーダーは同じ役割で、どちらを使っても結果は変わらない","ゲインは音色を変えずに音量を上げ、フェーダーは音色ごと変化させる","ゲインはエフェクト全体の量を調整し、フェーダーは音量のみを調整する","ゲインは入力段の音量、フェーダーは出力段の音量を調整する"],
+      ans: 3,
+      exp: "ゲインはチャンネルへの入力段の音量調整、フェーダーは出力段の音量調整です。ゲインで適切な入力レベルを設定し、フェーダーでミックスバランスを整えるのが基本です。"
+    },
+    {
+      q: "ボーカルの「サ行」がキツく刺さる問題を改善するための処理はどれですか？",
+      opts: ["エキスパンダー","マルチバンドコンプレッサー","ナローなEQで該当帯域をカットする","ディエッサー"],
+      ans: 3,
+      exp: "ディエッサーは3〜10kHz付近の歯擦音（サ行・シ行など）を検知して自動的に圧縮します。EQでの固定カットと違い、歯擦音が出たときだけ動的にかかるので自然な仕上がりになります。"
+    },
+    {
+      q: "ボーカルMIXで「センドリターン」でリバーブをかける方法の利点はどれですか？",
+      opts: ["トラックに直接挿すよりリバーブの音質が向上する","複数トラックで同じリバーブを共有でき、空間の統一感が出しやすい"],
+      ans: 1,
+      exp: "センドリターンはAUXトラックにリバーブを立ち上げ、複数トラックからセンドすることで同じ空間感を共有できます。CPU負荷の軽減にも効果的です。"
+    },
+    {
+      q: "コンプレッサーの「アタック」とは何を設定するパラメーターですか？",
+      opts: ["コンプがかかり終わって元の音量に戻るまでの時間","音量がしきい値を超えてからコンプがかかり始めるまでの時間","圧縮後に音量を持ち上げるためのゲイン量","コンプがかかり始めるしきい値の音量レベル"],
+      ans: 1,
+      exp: "アタックタイムはスレッショルドを超えてからコンプが反応し始めるまでの時間です。速いとトランジェントも圧縮され、遅いと語頭の抜け感が残ります。リリースは解除までの時間です。"
+    },
+    {
+      q: "EQでボーカルの「こもり」を改善したい場合、一般的にどの帯域を削りますか？",
+      opts: ["80Hz〜150Hz付近","3kHz〜5kHz付近","800Hz〜1kHz付近","200Hz〜400Hz付近"],
+      ans: 3,
+      exp: "200〜400Hz付近はボーカルのこもりや濁りが出やすい帯域です。ここを数dB削ると抜けが改善します。3〜5kHzはプレゼンス帯域、800Hz付近はホーミーな鳴りが出る帯域です。"
+    },
+    {
+      q: "ボーカルに「ディレイ」をかける際、楽曲のテンポに合わせてディレイタイムを設定する理由は何ですか？",
+      opts: ["ディレイの反復音がリズムと噛み合い、グルーヴを損なわずに馴染むため","テンポに同期させるとディレイのウェット量が自動的に最適化されるため"],
+      ans: 0,
+      exp: "テンポシンク（BPM同期）させることでディレイの反復音がリズムグリッドに乗り、楽曲の流れを崩しません。ズレていると音楽的に不自然なエコー感になります。"
+    },
+    {
+      q: "コンプレッサーの「レシオ（Ratio）」とは何ですか？",
+      opts: ["コンプがかかってから解除されるまでの時間","圧縮後に音量を持ち上げる出力ゲインの量","音を圧縮する強さの比率","コンプがかかり始めるしきい値の音量"],
+      ans: 2,
+      exp: "レシオは圧縮の強さの比率です。4:1なら、スレッショルドを4dB超えた分を1dBに圧縮します。∞:1（リミッター動作）はそれ以上の音量変化を完全に止めます。"
+    }
+  ],
+  3: [
+    {
+      q: "ショートディレイ（20〜30ms程度）をボーカルにかける主な目的はどれですか？",
+      opts: ["ステレオ感や厚みを自然に加えるため","高音域の耳障りなノイズ成分を自然に減衰させるため","ボーカルの発音タイミングをグリッドに合わせて修正するため","楽曲のテンポに合わせたリズミカルなエコーを加えるため"],
+      ans: 0,
+      exp: "20〜30msのショートディレイはハース効果を利用してステレオ感と厚みを自然に加えます。エコーとして知覚されないギリギリの長さで、ダブリングに近い効果が得られます。"
+    },
+    {
+      q: "ボーカルにコンプをかけた後、音量が下がって聴こえる場合、次にすべき操作はどれですか？",
+      opts: ["スレッショルドを上げてコンプのかかる量を減らす","アタックタイムを長くして音の立ち上がりを通しやすくする","レシオを下げてコンプの強さを弱める","メイクアップゲイン（アウトプットゲイン）で音量を持ち上げる"],
+      ans: 3,
+      exp: "コンプは音を圧縮するため音量が下がります。メイクアップゲインで補正してかける前後の音量を揃えるのが正しい手順です。スレッショルドやレシオを変えると設定が崩れてしまいます。"
+    },
+    {
+      q: "ボーカルMIXにおいて「オートメーション」を使う主な目的はどれですか？",
+      opts: ["DAWのテンポに合わせてエフェクトを自動で同期させるため","ピッチ補正の強さを曲の進行に合わせて自動で変化させるため","コンプの設定をリアルタイムで自動的に最適化するため","曲の進行に合わせて音量やパラメーターを細かくコントロールするため"],
+      ans: 3,
+      exp: "オートメーションは曲の展開に合わせてフェーダーやエフェクトのパラメーターをリアルタイムで変化させる機能です。サビだけ音量を上げる、Aメロはリバーブを深くするなど細かい表現が可能です。"
+    },
+    {
+      q: "ボーカルが「オケに埋もれて聴こえない」原因として最も可能性が高いものはどれですか？",
+      opts: ["ボーカルのリバーブが少なすぎて馴染んでいない","ボーカルとオケが同じ帯域でぶつかっている"],
+      ans: 1,
+      exp: "マスキングはオケとボーカルが同じ帯域で干渉し合い片方が聴こえにくくなる現象です。オケのEQでボーカルの主要帯域を少し削るか、ボーカルの帯域を明確にすることで改善します。"
+    },
+    {
+      q: "サビのボーカルを太く存在感を出したい時、EQで操作するとしたらどの帯域を軽くブーストするのが一般的ですか？",
+      opts: ["400Hz〜600Hz付近","1kHz〜2kHz付近","50Hz〜80Hz付近","100Hz〜200Hz付近"],
+      ans: 3,
+      exp: "100〜200Hz付近はボーカルの「ボディ・胸声感・太さ」を司る帯域です。ここを軽くブーストすると厚みが増します。50〜80Hzは超低域でボーカルにはあまり有効でなく、400〜600Hzはこもりが出やすい帯域です。"
+    },
+    {
+      q: "「パラレルコンプ」とはどのような手法ですか？",
+      opts: ["コンプを2台直列につないで段階的に強くかける","アタックとリリースを極端に短く設定して瞬時に反応させる","原音（ドライ）とコンプを強くかけた音をブレンドする","左右のチャンネルに別々のコンプをかけてステレオ感を調整する"],
+      ans: 2,
+      exp: "パラレルコンプ（NYコンプとも呼ぶ）は原音の自然なダイナミクスを残しながら、強くコンプした音のパンチ感をブレンドします。潰しすぎず迫力も出せるテクニックです。"
+    },
+    {
+      q: "ボーカルMIXにおいてEQはコンプの前後どちらにかけるべきか、という問いに対して最も適切な答えはどれですか？",
+      opts: ["コンプで均一にしてから音色を整えるため、EQは必ずコンプの後にかけるべきだ","EQとコンプは同じ役割なので、どちらか一方だけ使えばよい","不要な帯域を先に除去するため、EQは必ずコンプの前にかけるべきだ","目的によって前後を使い分けるのが正しく、絶対的な正解はない"],
+      ans: 3,
+      exp: "EQ→コンプは不要な帯域を除去してからコンプをかける方法、コンプ→EQはコンプで均一にしてから音色を整える方法で、どちらも正しい使い方です。目的と好みで使い分けます。"
+    },
+    {
+      q: "ボーカルMIXが完成に近づいたとき、最終確認として「モノラル再生」でチェックする主な理由はどれですか？",
+      opts: ["ステレオで聴いたとき位相がズレていないか、モノラルに落としても破綻しないか確認するため","リバーブの残響時間がモノラル環境で適切かどうか確認するため","スピーカーやヘッドホンによる音量差を確認するため","ピッチ補正のかかり具合がモノラルで変化しないか確認するため"],
+      ans: 0,
+      exp: "ステレオで気づきにくい位相ズレはモノラルに落とすと音がキャンセルされて急に薄くなります。スマホや小型スピーカーなどモノラル再生環境への対応確認にもなります。"
+    },
+    {
+      q: "ボーカルの「息継ぎ音（ブレスノイズ）」の処理方法として最も一般的なものはどれですか？",
+      opts: ["リバーブを深くかけて残響に埋もれさせる","ディエッサーで歯擦音として検知してカットする","ボリュームオートメーションやクリップゲインで音量を下げる","ゲートのスレッショルドを調整して自動でカットする"],
+      ans: 2,
+      exp: "ブレスはボリュームオートメーションやクリップゲインで音量を下げるのが最も一般的で自然です。完全に消すより少し残す方がリアルに聴こえることも多く、ゲートでは前後の音まで影響が出やすいです。"
+    },
+    {
+      q: "ボーカルに存在感を与える「プレゼンス」の帯域として一般的に言われているのはどこですか？",
+      opts: ["8kHz〜12kHz","500Hz〜800Hz","1kHz〜1.5kHz","2kHz〜5kHz"],
+      ans: 3,
+      exp: "2〜5kHzはボーカルの「前に出る感じ・存在感・明瞭感」を担うプレゼンス帯域です。8〜12kHzはエアー感・繊細さの帯域、500Hz〜800Hzはウォームさやこもりが出る帯域です。"
+    }
+  ],
+  2: [
+    {
+      q: "ボーカルのディエッサーで「ブロードバンド方式」と「マルチバンド方式」の違いとして正しいものはどれですか？",
+      opts: ["ブロードバンド方式は歯擦音を検知したとき全体の音量を下げ、マルチバンド方式は歯擦音の帯域のみを選択的に下げる","ブロードバンド方式はリアルタイム処理のみ対応し、マルチバンド方式はオフライン処理専用である","ブロードバンド方式はダイナミック処理、マルチバンド方式はスタティック処理である","ブロードバンド方式は低域の歯擦音に対応し、マルチバンド方式は高域の歯擦音専用である"],
+      ans: 0,
+      exp: "ブロードバンド方式は歯擦音検知時に全体の音量を下げるため音色が変わりやすいですが透明感があります。マルチバンド方式は歯擦音帯域のみ選択的に圧縮するため音色への影響が少ないです。"
+    },
+    {
+      q: "ボーカルMIXが完成したあと書き出す際「−1dBFSのトゥルーピーク制限」を推奨する理由はどれですか？",
+      opts: ["配信プラットフォームが受け付けられる最大ファイルサイズを超えないようにするため","トゥルーピークを下げるほどラウドネス値が上がり配信時の音量が大きくなるため","0dBFSで書き出すと波形が上限に張り付いてDAW上での再編集が困難になるため","DAWの内部処理はdBFSで管理されるが、MP3などへの変換やD/A変換時にインターサンプルピークが発生し0dBFSを超えることがあるため"],
+      ans: 3,
+      exp: "DAW内部はdBFSで管理されていますが、MP3エンコードやD/A変換時にサンプル間（インターサンプル）で実際の波形が0dBFSを超えることがあります。これを防ぐために−1dBFS以下に設定します。"
+    },
+    {
+      q: "コンプレッサーの「ニーの種類（ハードニー／ソフトニー）」の違いとして正しいものはどれですか？",
+      opts: ["ハードニーはアタックタイムが自動で速くなり、ソフトニーはアタックタイムが自動で遅くなる","ハードニーは低域に、ソフトニーは高域に特化したコンプ方式である","ハードニーはデジタルコンプ専用で、ソフトニーはアナログコンプ専用の概念である","ハードニーはスレッショルドを超えた瞬間に設定レシオで圧縮が始まり、ソフトニーはスレッショルド前後で徐々に圧縮量が増える"],
+      ans: 3,
+      exp: "ハードニーはスレッショルドを境に急激にコンプがかかり始め、クリアなコントロール感があります。ソフトニーはスレッショルド前後でなめらかにコンプがかかるため自然な圧縮感が得られます。"
+    },
+    {
+      q: "ラウドネスノーマライゼーションが普及した配信環境において、ボーカルMIXで特に意識すべきこととして正しいものはどれですか？",
+      opts: ["LUFSの目標値はすべてのプラットフォームで−14LUFSに統一されているため、それに合わせれば問題ない","過度にラウドネスを上げると配信時に音量が下げられ、コンプで潰した音のデメリットだけが残る可能性がある","配信プラットフォームが音量を統一するため、MIX段階のラウドネスは考慮しなくてよい","ラウドネスノーマライゼーションはストリーミングのみに適用され、ダウンロード販売には影響しない"],
+      ans: 1,
+      exp: "SpotifyやApple Musicなどは独自のラウドネス基準で音量を正規化します。過剰に音量を上げると配信時に下げられ、コンプで潰れた音質のデメリットだけが残ります。各プラットフォームの基準はそれぞれ異なります。"
+    },
+    {
+      q: "M/S（ミッドサイド）マトリクスの仕組みとして正しいものはどれですか？",
+      opts: ["MidはLチャンネル、SideはRチャンネルをそれぞれ独立して処理する","MidはL+Rの和成分（センター）、SideはL−Rの差成分（ステレオ広がり）をそれぞれ分離して処理する"],
+      ans: 1,
+      exp: "M/S処理はMid（L+Rの和＝センター成分）とSide（L−Rの差＝ステレオ広がり成分）を分離して個別に処理します。センターのボーカルだけにEQをかけるといった精密な処理が可能です。"
+    },
+    {
+      q: "ボーカルMIXで「アップワードエクスパンション」を使う目的として正しいものはどれですか？",
+      opts: ["スレッショルド以下の小さい音（ノイズやブレスなど）をさらに小さくして、ダイナミクスを自然に広げる","コンプで失われたトランジェント成分を後から付加して復元する","ボーカルのピッチが低い部分を自動で持ち上げて音程を補正する","スレッショルドを超えた大きい音をさらに大きくして迫力を出す"],
+      ans: 0,
+      exp: "アップワードエクスパンションはスレッショルド以下の小さい音をさらに小さくする処理です。歌っていない間のノイズやブレスを自然に抑えながら、ゲートより滑らかな処理が可能です。"
+    },
+    {
+      q: "リニアフェーズEQをボーカルトラックに使う際のデメリットとして正しいものはどれですか？",
+      opts: ["リニアフェーズEQはカットにのみ対応しており、ブーストには使用できない","リニアフェーズEQはステレオトラックにのみ対応しモノラルトラックには使用できない","処理遅延（レイテンシー）が大きく、トランジェントに独特のプリリンギングが発生することがある","リニアフェーズEQは特定の帯域しか処理できないため、全帯域への使用には不向きである"],
+      ans: 2,
+      exp: "リニアフェーズEQは位相を変化させない一方でレイテンシーが大きく、処理の特性上トランジェントの前にプリリンギング（前響き）が発生することがあります。ミニマムフェーズEQにはこの問題がない代わりに位相が変化します。"
+    },
+    {
+      q: "ボーカルのピッチ補正で「フォルマントシフト」が必要になる典型的な場面はどれですか？",
+      opts: ["フォルマントシフトはハーモニー生成時のみ必要でピッチ補正単体には関係しない","フォルマントシフトはコンプの前段に置いた場合のみ正しく機能する","ピッチを半音以内の微調整しかしない場合はフォルマントシフトは不要で常に固定でよい","ピッチを数半音以上大きく動かす際に、声の母音の響き（声質）が不自然に変化するのを防ぐため"],
+      ans: 3,
+      exp: "フォルマントは声の母音の響きを決める共鳴周波数です。ピッチを大きく動かすとフォルマントもズレて「ミッキーマウス化」などが起きます。フォルマントシフトで補正することで自然な声質を保てます。"
+    },
+    {
+      q: "「トゥルーピーク（True Peak）」と「サンプルピーク」の違いとして正しいものはどれですか？",
+      opts: ["サンプルピークはDAW内部のデジタルサンプル上のピーク値で、トゥルーピークはD/A変換時などに発生するサンプル間の実際の波形ピークを指す","トゥルーピークはモノラル再生時のピーク、サンプルピークはステレオ再生時のピークを指す","サンプルピークは48kHz以上のサンプルレートでのみ計測でき、トゥルーピークは44.1kHz専用の計測方式である","トゥルーピークはLUFS換算したピーク値で、サンプルピークは瞬間的な波形の最大値を指す"],
+      ans: 0,
+      exp: "サンプルピークはDAW内のデジタルサンプル値のピークですが、D/A変換時にサンプル間で実際の波形がさらに高くなることがあります（インターサンプルピーク）。これを考慮したのがトゥルーピークです。"
+    },
+    {
+      q: "ボーカルMIXで「センドリターンのリバーブ」と「インサートのリバーブ」を使い分ける基準として最も適切なものはどれですか？",
+      opts: ["インサートは残響時間が短いリバーブ専用で、センドリターンは長いリバーブ専用である","複数トラックで空間を共有したい場合はセンドリターン、そのトラック専用の特殊な空間処理をしたい場合はインサートを使う","センドリターンはモノラルトラックにのみ使用でき、ステレオトラックにはインサートを使う","インサートは空間系エフェクト全般に使い、センドリターンはコンプやEQに使う"],
+      ans: 1,
+      exp: "センドリターンは複数トラックで同じリバーブを共有して空間の統一感を出すのに適しています。インサートはそのトラック専用の個別の空間処理（例：ボーカルだけ特殊なコンボリューションリバーブ）に使います。"
+    }
+  ],
+  1: [
+    {
+      q: "ボーカルMIXにおいてプラグインの処理順（プラグインチェーンの順番）が音質に影響する根本的な理由として正しいものはどれですか？",
+      opts: ["プラグインの順番が変わるとDAW内部のサンプルレートが変動し、それが音質の違いとして現れる","DAWはプラグインを上から順番に並列処理するため、順番が変わると全プラグインの処理が同時にリセットされる","各プラグインは前段の処理結果を受けた音に対して動作するため、順番が変わると各プラグインへの入力信号の状態が変わり、結果として出音が変わる","プラグインチェーンの順番はCPUの処理効率のみに影響し、音質への影響はない"],
+      ans: 2,
+      exp: "プラグインチェーンは直列処理です。各プラグインは前段の出力を入力として処理するため、順番が変わると各プラグインが受け取る音の状態が変わり、最終的な出音も変わります。例：EQ後コンプとコンプ後EQでは全く異なる結果になります。"
+    },
+    {
+      q: "コンプレッサーのリリースタイムが「短すぎる」場合にボーカルで起きる現象として正しいものはどれですか？",
+      opts: ["ゲインリダクションが解除されるまでの時間が長くなり、音のサステインが不自然に伸びる","リリースが短すぎるとコンプが全くかからなくなり、ダイナミクスが無制限に広がる","リリースが短いとアタックタイムも連動して短くなり、トランジェントが過剰に強調される","ゲインリダクションが音楽的なリズムと関係なく細かく上下し、「ポンピング」や「ブリージング」と呼ばれる不自然な音量変動が生じる"],
+      ans: 3,
+      exp: "リリースが短すぎるとゲインリダクションが音楽のリズムと無関係に細かく変動し、ポンピング（ドキドキとした音量変動）やブリージング（ザーッというノイズの揺れ）が生じます。音楽のテンポに合わせたリリース設定が重要です。"
+    },
+    {
+      q: "ボーカルに「フェイズキャンセレーション（位相キャンセル）」が起きていると疑われる状況はどれですか？",
+      opts: ["EQでブーストした帯域が、コンプをかけた後に逆に減衰して聴こえる","ヘッドホンでは正常だがスタジオモニターで再生するとボーカルの音量が2倍に聴こえる","リバーブのウェット成分がドライ音より大きくなったとき、空間が過剰に広がって聴こえる","ステレオ再生では問題ないが、モノラルに落とすとボーカルの特定の帯域が急に薄くなったり消えたりする"],
+      ans: 3,
+      exp: "位相キャンセルはステレオでは聴こえにくく、モノラルに変換したときに特定帯域が急に消えたり薄くなったりすることで発見できます。ダブリングや複数マイクの使用時に特に注意が必要です。"
+    },
+    {
+      q: "EQで「Qを広く（低Q）してブースト」した場合と「Qを狭く（高Q）してブースト」した場合の聴感上の違いとして正しいものはどれですか？",
+      opts: ["低Qは広い帯域を緩やかに持ち上げて自然な音色変化をもたらし、高Qはピンポイントな帯域を強調してレゾナンスや共鳴が目立ちやすい","低Qはブーストにのみ使用でき、高QはカットにのみEQ効果が現れる","低Qはボーカルの低域にのみ影響し、高Qはボーカルの高域にのみ影響する","低Qは位相への影響が大きく、高Qは位相への影響がほぼゼロである"],
+      ans: 0,
+      exp: "低Q（広帯域）は自然でミュージカルな音色変化に向いています。高Q（狭帯域）は特定の共鳴やレゾナンスをピンポイントで狙い打ちするのに有効ですが、過剰なブーストは不自然なリンギングを生じさせることがあります。"
+    },
+    {
+      q: "ボーカルMIXで「ダイナミックEQ」と「マルチバンドコンプ」の使い分けの基準として正しいものはどれですか？",
+      opts: ["ダイナミックEQはブーストのみ対応でマルチバンドコンプはカットのみ対応のため、目的に応じて使い分ける","ダイナミックEQは特定帯域の音量変動を透明感のあるEQ的操作で制御したいとき向きで、マルチバンドコンプは帯域ごとのダイナミクス管理をコンプ的に行いたいとき向きである"],
+      ans: 1,
+      exp: "ダイナミックEQはEQとして帯域を音量に応じて動的に操作します。マルチバンドコンプは帯域を分割してそれぞれにコンプをかけます。透明感重視ならダイナミックEQ、ダイナミクスの制御重視ならマルチバンドコンプが向いています。"
+    },
+    {
+      q: "プロの現場でコンピング後に「ピッチ補正前にタイミング補正を先に行う」理由として最も適切なものはどれですか？",
+      opts: ["タイミング補正はオーディオ波形を破壊編集するため、可逆処理であるピッチ補正より先に済ませるため","ピッチ補正ソフトはタイミングがズレた状態だとピッチを誤検知しやすく、先にタイミングを揃えることで補正精度が上がるため","タイミング補正はピッチ補正よりCPU負荷が高いため、先に処理してDAWを軽くするため","ピッチ補正をかけると波形のタイミング情報が失われるため、後からタイミング補正ができなくなるため"],
+      ans: 1,
+      exp: "ピッチ補正ソフト（MelodyneなどのARA対応プラグイン）はタイミングがズレた波形だとピッチの検出精度が下がることがあります。先にタイミングを整えることで正確なピッチ補正が可能になります。"
+    },
+    {
+      q: "ボーカルに深いリバーブをかけながら「前に出て聴こえる」ようにする最も高度なアプローチとして正しいものはどれですか？",
+      opts: ["リバーブのウェット量を下げて全体的にドライ音の割合を増やす","センドレベルを絞ってリバーブへ送る量を最小限にする","プリディレイを長めに設定してドライ音とリバーブの時間差を作り、リバーブにハイカットをかけて高域の存在感をドライ音に残す","リバーブのディケイタイムを短くして残響が早く消えるよう設定する"],
+      ans: 2,
+      exp: "深いリバーブで空間感を出しながらボーカルを前に立たせるには、プリディレイでドライ音との時間差を作ることが重要です。さらにリバーブにハイカットをかけると高域の明瞭感をドライ音に集中させられ、空間は広くてボーカルは前に出るという効果が得られます。"
+    },
+    {
+      q: "ボーカルMIXにおいて「ゼロレイテンシーモード」と「通常モード」を使い分けるべき場面として正しいものはどれですか？",
+      opts: ["ゼロレイテンシーモードはマスタートラックにのみ適用でき、個別トラックには使えない","通常モードはリアルタイム処理に対応していないため、レコーディング中は必ず通常モードをオフにする必要がある","ゼロレイテンシーモードは音質が高いため、常にゼロレイテンシーモードで作業すべきだ","レコーディング中のモニタリングにはゼロレイテンシーモードを使い、ミックス作業中はPDCが機能する通常モードで高品質なプラグインを使うのが実践的だ"],
+      ans: 3,
+      exp: "レコーディング中はモニタリングの遅延を最小化するためゼロレイテンシーモードが有効です。ミックス時はPDC（プラグインディレイコンペンセーション）が機能する通常モードで、レイテンシーが大きくても高品質なプラグインを使えます。"
+    },
+    {
+      q: "ボーカルMIXにおいて「フィードバック型ディレイ」と「フィードフォワード型コンプレッサー」の共通する設計上の特徴として正しいものはどれですか？",
+      opts: ["どちらも出力信号を検出回路に戻すことで処理量を自己調整するため、高レベル入力時に予測しにくい動作をすることがある","どちらもレイテンシーが発生しないゼロディレイ設計であるため、レコーディング中のモニタリングに最適である","どちらも処理をデジタル領域でのみ行うため、アナログ機材との組み合わせには使用できない","どちらも入力信号を検出回路に使うため、スレッショルドに達する前に処理が始まりトランジェントを損なわない"],
+      ans: 0,
+      exp: "フィードバック型ディレイは出力を入力に戻すループ構造、フィードフォワード型コンプも出力信号を検出回路に戻す設計です。どちらも出力が検出回路にフィードバックされるため、高入力時に自己発振や予測困難な動作が起きやすいという共通の特性があります。"
+    },
+    {
+      q: "「良いボーカルMIX」の最終的な判断基準として、プロのエンジニアが最も重視するものはどれですか？",
+      opts: ["ハイエンドプラグインと高品質なアナログ機材を組み合わせた処理が施されているか","スペクトラムアナライザーとラウドネスメーターの数値がすべて基準値内に収まっているか","ヘッドホンとモニタースピーカーで完全に同じ音に聴こえるよう調整されているか","あらゆる再生環境でボーカルが意図通りに機能し、楽曲の感情・世界観を最大限に伝えられているか"],
+      ans: 3,
+      exp: "どんな高価な機材やプラグインを使っても、楽曲の感情・世界観・アーティストの意図がリスナーに伝わらなければ良いMIXとは言えません。技術・機材はあくまで手段であり、音楽として機能することが最終目標です。"
+    }
+  ]
+};
+
+const PASS_SCORE = 7;
+let currentGrade = 5;
+let currentQ = 0;
+let answers = [];
+let selectedGrade = null;
+
+function showPage(id) {
+  ['page-top','page-quiz','page-result'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+// Grade select
+document.querySelectorAll('.grade-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.grade-card').forEach(c => c.style.borderColor = '');
+    card.style.borderColor = 'var(--accent)';
+    selectedGrade = parseInt(card.dataset.grade);
+  });
+});
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  if (!selectedGrade) {
+    // default to 5
+    selectedGrade = 5;
+  }
+  startQuiz(selectedGrade);
+});
+
+function startQuiz(grade) {
+  currentGrade = grade;
+  currentQ = 0;
+  answers = [];
+  showPage('page-quiz');
+  document.getElementById('quiz-grade-badge').textContent = grade + '級';
+
+  // dots
+  const dots = document.getElementById('progress-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i === 0 ? ' current' : '');
+    dots.appendChild(d);
+  }
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const qs = QUESTIONS[currentGrade];
+  const q = qs[currentQ];
+  const total = qs.length;
+
+  document.getElementById('question-num').textContent = 'Q' + String(currentQ+1).padStart(2,'0');
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('progress-text').textContent = 'Q' + (currentQ+1) + ' / ' + total;
+  document.getElementById('progress-pct').textContent = Math.round(currentQ/total*100) + '%';
+  document.getElementById('progress-fill').style.width = (currentQ/total*100) + '%';
+
+  // dots
+  const dots = document.getElementById('progress-dots').children;
+  for (let i = 0; i < dots.length; i++) {
+    dots[i].className = 'progress-dot';
+    if (i < currentQ) dots[i].classList.add('answered');
+    if (i === currentQ) dots[i].classList.add('current');
+  }
+
+  const labels = ['A','B','C','D'];
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.opts.forEach((opt, idx) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-label">${labels[idx]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => selectAnswer(idx));
+    li.appendChild(btn);
+    list.appendChild(li);
+  });
+
+  document.getElementById('btn-next').style.display = 'none';
+}
+
+function selectAnswer(idx) {
+  const qs = QUESTIONS[currentGrade];
+  const q = qs[currentQ];
+  answers.push(idx);
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === idx && idx !== q.ans) btn.classList.add('wrong');
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.textContent = currentQ < qs.length - 1 ? '次の問題' : '結果を見る';
+  nextBtn.onclick = () => {
+    currentQ++;
+    if (currentQ < qs.length) {
+      renderQuestion();
+    } else {
+      showResult();
+    }
+  };
+}
+
+function showResult() {
+  showPage('page-result');
+  const qs = QUESTIONS[currentGrade];
+  const score = answers.filter((a,i) => a === qs[i].ans).length;
+  const pass = score >= PASS_SCORE;
+
+  document.getElementById('result-grade-title').textContent = currentGrade + '級 — 結果発表';
+  document.getElementById('result-score').textContent = score;
+  document.getElementById('result-score-sub').textContent = '/ ' + qs.length + '問中正解';
+
+  const verdict = document.getElementById('result-verdict');
+  const comment = document.getElementById('result-comment');
+
+  if (pass) {
+    verdict.textContent = '✓ 合格';
+    verdict.className = 'result-verdict pass';
+    const msgs = {
+      5: '基本用語はしっかり理解できています。4級へ進みましょう。',
+      4: 'パラメーターの意味を正しく把握しています。3級へ挑戦！',
+      3: '中級レベルの処理判断力があります。2級への準備は万全です。',
+      2: '高度な応用知識を持っています。いよいよ1級へ。',
+      1: '素晴らしい。プロレベルの知識を証明しました。'
+    };
+    comment.textContent = msgs[currentGrade];
+  } else {
+    verdict.textContent = '✗ 不合格';
+    verdict.className = 'result-verdict fail';
+    comment.textContent = `合格ラインは${PASS_SCORE}問以上です。解答レビューを確認して、苦手な箇所を復習してから再挑戦しましょう。`;
+  }
+
+  // Review
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '';
+  const labels = ['A','B','C','D'];
+
+  qs.forEach((q, i) => {
+    const userAns = answers[i];
+    const correct = userAns === q.ans;
+
+    const item = document.createElement('div');
+    item.className = 'review-item';
+
+    const header = document.createElement('div');
+    header.className = 'review-item-header';
+    header.innerHTML = `
+      <span class="review-status ${correct ? 'ok' : 'ng'}">${correct ? '○' : '✕'}</span>
+      <span class="review-q-num">Q${String(i+1).padStart(2,'0')}</span>
+      <span class="review-q-text">${q.q}</span>
+      <span class="review-toggle">▼</span>
+    `;
+
+    const detail = document.createElement('div');
+    detail.className = 'review-detail' + (!correct ? ' open' : '');
+
+    const userLabel = labels[userAns] ?? '−';
+    const correctLabel = labels[q.ans];
+
+    detail.innerHTML = `
+      <div class="review-answer-row">
+        <span class="label">あなたの回答</span>
+        <span class="val ${correct ? 'correct-val' : 'wrong-val'}">${userLabel}. ${q.opts[userAns] ?? '−'}</span>
+      </div>
+      ${!correct ? `<div class="review-answer-row">
+        <span class="label">正解</span>
+        <span class="val correct-val">${correctLabel}. ${q.opts[q.ans]}</span>
+      </div>` : ''}
+      <div class="review-explanation">${q.exp}</div>
+    `;
+
+    header.addEventListener('click', () => {
+      detail.classList.toggle('open');
+      header.querySelector('.review-toggle').textContent = detail.classList.contains('open') ? '▲' : '▼';
+    });
+
+    item.appendChild(header);
+    item.appendChild(detail);
+    reviewList.appendChild(item);
+  });
+
+  document.getElementById('btn-retry').onclick = () => startQuiz(currentGrade);
+  document.getElementById('btn-home').onclick = () => showPage('page-top');
+}
+</script>
+</body>
+</html>
